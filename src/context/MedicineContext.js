@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from "react";
+import { toast } from "react-toastify";
 
 export const MedicineContext = createContext();
 
@@ -14,8 +15,30 @@ export const MedicineProvider = ({ children }) => {
     setMedicines([...medicines, medicine]);
   };
 
-  const addToCart = (medicine) => {
-    setCart([...cart, medicine]);
+  const addToCart = (medicineId, quantity) => {
+    console.log(medicineId, quantity);
+    const existingIndex = cart.findIndex((item) => item.id === medicineId);
+    const medicine = medicines.find((medicine) => medicine.id === medicineId);
+
+    if (existingIndex === -1) {
+      // If medicine is not already in the cart, add it
+      if (quantity > medicine.quantity) {
+        toast.error("Medicine out of stock for the quantity");
+      } else {
+        setCart([...cart, { id: medicineId, quantity }]);
+        toast.success("Medicine addeed to cart");
+      }
+    } else {
+      // If medicine is already in the cart, update its quantity
+      const updatedCart = [...cart];
+      if (updatedCart[existingIndex].quantity + quantity > medicine.quantity) {
+        toast.error("Medicine out of stock for the quantity");
+      } else {
+        updatedCart[existingIndex].quantity += quantity;
+        setCart(updatedCart);
+        toast.success("Medicine addeed to cart");
+      }
+    }
   };
 
   const removeCartItem = (id) => {
@@ -23,7 +46,14 @@ export const MedicineProvider = ({ children }) => {
   };
 
   const getTotal = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cart.reduce((total, item) => {
+      const medicine = medicines.find((medicine) => medicine.id === item.id);
+      return total + medicine.price * item.quantity;
+    }, 0);
+  };
+
+  const getCartItems = () => {
+    return cart.reduce((total, item) => total + Number(item.quantity), 0);
   };
 
   return (
@@ -35,6 +65,7 @@ export const MedicineProvider = ({ children }) => {
         addToCart,
         removeCartItem,
         getTotal,
+        getCartItems,
       }}
     >
       {children}
