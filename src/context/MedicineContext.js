@@ -61,6 +61,8 @@ export const MedicineProvider = ({ children }) => {
       value={{
         medicines,
         cart,
+        setMedicines,
+        setCart,
         addMedicine,
         addToCart,
         removeCartItem,
