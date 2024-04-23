@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from "react-toastify";
 
 export const MedicineContext = createContext();
@@ -11,8 +11,61 @@ export const MedicineProvider = ({ children }) => {
   const [medicines, setMedicines] = useState([]);
   const [cart, setCart] = useState([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "https://cloud.appwrite.io/v1/databases/6627ac42efa9611b216a/collections/6627ac854c14f7cbc29b/documents/6627aecf8a83d5afdc07",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Appwrite-Project": "662270dcb941c8066073",
+            },
+          }
+        );
+        const data = await response.json();
+        // const dataToset = JSON.parse(data.medicineCollection);
+        setMedicines(JSON.parse(data.medicineCollection));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  //update data in database
+  const updateDocument = async (dataToUpdate) => {
+    try {
+      const response = await fetch(
+        "https://cloud.appwrite.io/v1/databases/6627ac42efa9611b216a/collections/6627ac854c14f7cbc29b/documents/6627aecf8a83d5afdc07",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Appwrite-Project": "662270dcb941c8066073",
+          },
+          body: JSON.stringify({
+            data: dataToUpdate,
+            permissions: ['read("any")'],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      setMedicines(JSON.parse(data.medicineCollection));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //add medicine when new medicine data entered
   const addMedicine = (medicine) => {
-    setMedicines([...medicines, medicine]);
+    const updatedData = {
+      medicineCollection: JSON.stringify([...medicines, medicine]),
+    };
+    updateDocument(updatedData);
   };
 
   const addToCart = (medicineId, quantity) => {
@@ -68,6 +121,7 @@ export const MedicineProvider = ({ children }) => {
         removeCartItem,
         getTotal,
         getCartItems,
+        updateDocument,
       }}
     >
       {children}

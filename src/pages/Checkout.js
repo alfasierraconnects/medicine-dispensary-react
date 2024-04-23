@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cart, getTotal, medicines, setCart, setMedicines } =
+  const { cart, getTotal, medicines, setCart, updateDocument } =
     useMedicineContext();
   const [customerDetails, setCustomerDetails] = useState({
     name: "",
@@ -54,7 +54,11 @@ const Checkout = () => {
         updatedMedicinesCollection.splice(updateMedicine, 1);
       }
     });
-    setMedicines(updatedMedicinesCollection);
+    // setMedicines(updatedMedicinesCollection);
+    const updatedData = {
+      medicineCollection: JSON.stringify(updatedMedicinesCollection),
+    };
+    updateDocument(updatedData);
     setCart([]);
     navigate("/");
   };
